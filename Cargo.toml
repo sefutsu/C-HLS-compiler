@@ -1,0 +1,12 @@
+[package]
+name = "C-HLS-compiler"
+version = "0.1.0"
+authors = ["sefutsu <sefutsu.r@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+lalrpop-util = "0.19.5"
+regex = "1"
+
+[build-dependencies]
+lalrpop = "0.19.5"

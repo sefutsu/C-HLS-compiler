@@ -1,0 +1,122 @@
+use std::str::FromStr;
+use crate::ast;
+
+grammar;
+
+CommaList<T>: Vec<T> = {
+  <mut v:(<T> ",")*> <e:T?> => match e {
+    None => v,
+    Some(e) => {
+      v.push(e);
+      v
+    }
+  }
+};
+
+TypeSpecifier: ast::Type = {
+  "int" => ast::Type::I32,
+  "unsigned" "int"? => ast::Type::U32,
+};
+TypeIdTuple: (ast::Type, String) = <t:TypeSpecifier> <v:Identifier> => (t, v);
+
+pub Program: ast::Program = <Function*> => ast::Program{functions: <>};
+
+Function: ast::Function = {
+  <t:TypeSpecifier> <i:Identifier> "(" <a:CommaList<TypeIdTuple>> ")" <s:Statement> =>
+    ast::Function{ret_type: t, name: i, args: a, content: s},
+};
+
+CompoundStatement: Vec<ast::Stat> = "{" <Statement*> "}";
+Statement: ast::Stat = {
+  <CompoundStatement> => ast::Stat::Compound(<>),
+  <Expression> ";" => ast::Stat::Expression(Box::new(<>)),
+  <t:TypeSpecifier> <i:Identifier> ";" => ast::Stat::Decl(t, i, None),
+  <t:TypeSpecifier> <i:Identifier> "=" <e:Expression> ";" => ast::Stat::Decl(t, i, Some(e)),
+  "return" <Expression> ";" => ast::Stat::Return(Box::new(<>)),
+  "if" "(" <e:Expression> ")" <s:Statement> "else" <t:Statement> => ast::Stat::IfElse(Box::new(e), Box::new(s), Box::new(t)),
+  "while" "(" <e:Expression> ")" <s:Statement> => ast::Stat::While(Box::new(e), Box::new(s)),
+};
+
+Expression: ast::Expr = <AssignmentExpression>;
+AssignmentExpression: ast::Expr = {
+  <ConditionalExpression>,
+  <i:Identifier> "=" <e:AssignmentExpression> => ast::Expr::Assign(i, Box::new(e)),
+};
+ConstantExpression: ast::Expr = <ConditionalExpression>;
+ConditionalExpression: ast::Expr = <LogicalOrExpression>;
+LogicalOrExpression: ast::Expr = {
+  <LogicalAndExpression>,
+  <a:LogicalOrExpression> "||" <b:LogicalAndExpression> => ast::Expr::Op2(ast::Op2::Logor, Box::new(a), Box::new(b)),
+};
+LogicalAndExpression: ast::Expr = {
+  <InclusiveOrExpression>,
+  <a:LogicalAndExpression> "&&" <b:InclusiveOrExpression> => ast::Expr::Op2(ast::Op2::Logand, Box::new(a), Box::new(b)),
+};
+InclusiveOrExpression: ast::Expr = {
+  <ExclusiveOrExpression>,
+  <a:InclusiveOrExpression> "|" <b:ExclusiveOrExpression> => ast::Expr::Op2(ast::Op2::Or, Box::new(a), Box::new(b)),
+};
+ExclusiveOrExpression: ast::Expr = {
+  <AndExpression>,
+  <a:ExclusiveOrExpression> "^" <b:AndExpression> => ast::Expr::Op2(ast::Op2::Xor, Box::new(a), Box::new(b)),
+};
+AndExpression: ast::Expr = {
+  <EqualityExpression>,
+  <a:AndExpression> "&" <b:EqualityExpression> => ast::Expr::Op2(ast::Op2::And, Box::new(a), Box::new(b)),
+};
+EqualityExpression: ast::Expr = {
+  <RelationalExpression>,
+  <a:EqualityExpression> "==" <b:RelationalExpression> => ast::Expr::Op2(ast::Op2::Eq, Box::new(a), Box::new(b)),
+  <a:EqualityExpression> "!=" <b:RelationalExpression> => ast::Expr::Op2(ast::Op2::Ne, Box::new(a), Box::new(b)),
+}
+RelationalExpression: ast::Expr = {
+  <ShiftExpression>,
+  <a:RelationalExpression> "<" <b:ShiftExpression> => ast::Expr::Op2(ast::Op2::Lt, Box::new(a), Box::new(b)),
+  <a:RelationalExpression> "<=" <b:ShiftExpression> => ast::Expr::Op2(ast::Op2::Le, Box::new(a), Box::new(b)),
+  <a:RelationalExpression> ">" <b:ShiftExpression> => ast::Expr::Op2(ast::Op2::Lt, Box::new(b), Box::new(a)),
+  <a:RelationalExpression> ">=" <b:ShiftExpression> => ast::Expr::Op2(ast::Op2::Le, Box::new(b), Box::new(a)),
+};
+ShiftExpression: ast::Expr = {
+  <AdditiveExpression>,
+  <a:ShiftExpression> "<<" <b:AdditiveExpression> => ast::Expr::Op2(ast::Op2::Lshift, Box::new(a), Box::new(b)),
+  <a:ShiftExpression> ">>" <b:AdditiveExpression> => ast::Expr::Op2(ast::Op2::Rshift, Box::new(a), Box::new(b)),
+};
+AdditiveExpression: ast::Expr = {
+  <MultiplicativeExpression>,
+  <a:AdditiveExpression> "+" <b:MultiplicativeExpression> => ast::Expr::Op2(ast::Op2::Add, Box::new(a), Box::new(b)),
+  <a:AdditiveExpression> "-" <b:MultiplicativeExpression> => ast::Expr::Op2(ast::Op2::Sub, Box::new(a), Box::new(b)),
+};
+MultiplicativeExpression: ast::Expr = {
+  <CastExpression>,
+  <a:MultiplicativeExpression> "*" <b:CastExpression> => ast::Expr::Op2(ast::Op2::Mul, Box::new(a), Box::new(b)),
+  <a:MultiplicativeExpression> "/" <b:CastExpression> => ast::Expr::Op2(ast::Op2::Div, Box::new(a), Box::new(b)),
+};
+CastExpression: ast::Expr = <UnaryExpression>;
+UnaryExpression: ast::Expr = {
+  <PrimaryExpression>,
+  <op:UnaryOperator> <e:PrimaryExpression> => ast::Expr::Op1(op, Box::new(e)),
+};
+PrimaryExpression: ast::Expr = {
+  <Identifier> => ast::Expr::Id(<>),
+  <Constant>,
+  "(" <Expression> ")",
+};
+Constant: ast::Expr = {
+  <r"[0-9]+"> => ast::Expr::Int(i64::from_str(<>).unwrap()),
+};
+Identifier: String = {
+  <r"[a-zA-Z_][a-zA-Z_0-9]*"> => String::from(<>),
+};
+UnaryOperator: ast::Op1 = {
+  "-" => ast::Op1::Neg,
+  "!" => ast::Op1::Lognot,
+};
+
+
+// skip comments
+match {
+  r"\s*" => { }, // The default whitespace skipping is disabled an `ignore pattern` is specified
+  r"//[^\n\r]*[\n\r]*" => { }, // Skip `// comments`
+  r"/\*([^\*]*\*+[^\*/])*([^\*]*\*+|[^\*])*\*/" => { },  // Skip `/* comments */`
+  _
+}
