@@ -1,5 +1,6 @@
 use crate::ast;
 use std::collections::HashMap;
+use std::cmp::Ordering;
 
 #[derive(Debug, Clone)]
 pub enum Next {
@@ -22,6 +23,22 @@ impl CDFGNode {
     self.next = n;
   }
 }
+impl Ord for CDFGNode {
+  fn cmp(&self, other: &Self) -> Ordering {
+    self.idx.cmp(&other.idx)
+  }
+}
+impl PartialOrd for CDFGNode {
+  fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+    Some(self.cmp(other))
+  }
+}
+impl PartialEq for CDFGNode {
+  fn eq(&self, other: &Self) -> bool {
+    self.idx == other.idx
+  }
+}
+impl Eq for CDFGNode {}
 
 #[derive(Debug, Clone)]
 pub struct RegData {
