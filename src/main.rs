@@ -15,6 +15,7 @@ fn main() {
       Ok(s) => {
         eprintln!("Parsed: {:#?}", s);
         let cdfg = s.to_cdfg();
+        eprintln!("CDFG: {:#?}", cdfg);
       }
       Err(e) => eprintln!("Parse error: {:#?}", e),
     }

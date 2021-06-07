@@ -51,6 +51,12 @@ pub struct Function {
   pub graph: HashMap<i32, CDFGNode>,
 }
 
+impl Function {
+  pub fn add_node(&mut self, node: CDFGNode) {
+    self.graph.insert(node.idx, node);
+  }
+}
+
 #[derive(Debug, Clone)]
 pub struct Program {
   pub functions: Vec<Function>,
