@@ -28,6 +28,7 @@ Function: ast::Function = {
 
 CompoundStatement: Vec<ast::Stat> = "{" <Statement*> "}";
 Statement: ast::Stat = {
+  ";" => ast::Stat::Void,
   <CompoundStatement> => ast::Stat::Compound(<>),
   <Expression> ";" => ast::Stat::Expression(Box::new(<>)),
   <t:TypeSpecifier> <i:Identifier> ";" => ast::Stat::Decl(t, i, None),

@@ -5,6 +5,7 @@ use std::io::Read;
 lalrpop_mod!(pub c);
 
 mod ast;
+mod cdfg;
 
 fn main() {
     let parser = c::ProgramParser::new();
@@ -13,6 +14,7 @@ fn main() {
     match parser.parse(&buf) {
       Ok(s) => {
         eprintln!("Parsed: {:#?}", s);
+        let cdfg = s.to_cdfg();
       }
       Err(e) => eprintln!("Parse error: {:#?}", e),
     }

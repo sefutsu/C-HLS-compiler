@@ -33,6 +33,7 @@ pub enum Expr {
 
 #[derive(Debug, Clone)]
 pub enum Stat {
+  Void,
   Expression(Box<Expr>),
   Decl(Type, String, Option<Expr>),
   Compound(Vec<Stat>),
@@ -53,3 +54,5 @@ pub struct Function {
 pub struct Program {
   pub functions: Vec<Function>,
 }
+
+mod to_cdfg;
