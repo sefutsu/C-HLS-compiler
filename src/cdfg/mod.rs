@@ -45,6 +45,7 @@ pub struct WireData {
 
 #[derive(Debug, Clone)]
 pub struct Function {
+  pub name: String,
   pub args: Vec<String>,
   pub regs: Vec<RegData>,
   pub wires: Vec<WireData>,
@@ -61,3 +62,5 @@ impl Function {
 pub struct Program {
   pub functions: Vec<Function>,
 }
+
+mod output;

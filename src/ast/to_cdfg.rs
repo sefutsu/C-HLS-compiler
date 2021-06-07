@@ -15,7 +15,7 @@ impl ast::Function {
     let wires: Vec<cdfg::WireData> = Vec::new();
     let graph: HashMap<i32, cdfg::CDFGNode> = HashMap::new();
     let args = self.args.into_iter().map(|x| x.1).collect();
-    let mut fun = cdfg::Function { args, regs, wires, graph };
+    let mut fun = cdfg::Function { name: self.name, args, regs, wires, graph };
     let mut state = 1;
     self.content.to_cdfg(&mut fun, &mut state);
     fun
