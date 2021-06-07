@@ -21,6 +21,13 @@ impl fmt::Display for Function {
     for r in self.regs.iter() {
       write!(f, "reg [31:0] {};\n", r.name)?;
     }
+    // fsmのビット幅を求める
+    let mut fsm_len = 1u8;
+    while self.graph.contains_key(&(1 << fsm_len)){
+      fsm_len += 1;
+    }
+    write!(f, "\nreg [{}:0] ap_fsm\n", fsm_len - 1)?;
+    write!(f, "assign ap_idle = ap_fsm == 0;\n\n")?;
     Ok(())
   }
 }
