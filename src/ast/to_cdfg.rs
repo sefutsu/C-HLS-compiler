@@ -10,8 +10,7 @@ impl ast::Program {
 
 impl ast::Function {
   fn to_cdfg(self) -> cdfg::Function {
-    let regs: Vec<cdfg::RegData> = 
-      self.args.iter().map(|x| cdfg::RegData::new(x.0.clone(), x.1.clone(), 0i64)).collect();
+    let regs: Vec<cdfg::RegData> = Vec::new();
     let wires: Vec<cdfg::WireData> = Vec::new();
     let graph: HashMap<i32, cdfg::CDFGNode> = HashMap::new();
     let args = self.args.into_iter().map(|x| x.1).collect();

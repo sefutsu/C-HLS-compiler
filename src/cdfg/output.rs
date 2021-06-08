@@ -18,6 +18,9 @@ impl fmt::Display for Function {
       write!(f, "\tinput [31:0] ap_{},\n", arg)?;
     }
     write!(f, "\toutput reg [31:0] ap_return\n);\n\n")?;
+    for r in self.args.iter() {
+      write!(f, "reg [31:0] {};\n", r)?;
+    }
     for r in self.regs.iter() {
       write!(f, "reg [31:0] {};\n", r.name)?;
     }
@@ -26,13 +29,23 @@ impl fmt::Display for Function {
     while self.graph.contains_key(&(1 << fsm_len)){
       fsm_len += 1;
     }
-    write!(f, "\nreg [{}:0] ap_fsm\n", fsm_len - 1)?;
+    write!(f, "\nreg [{}:0] ap_fsm;\n", fsm_len - 1)?;
     write!(f, "assign ap_idle = ap_fsm == 0;\n\n")?;
+
+    for w in self.wires.iter() {
+      match w.t {
+        ast::Type::U32 => write!(f, "wire [31:0] {} = {};\n", w.name, w.value)?,
+        ast::Type::I32 => write!(f, "wire [31:0] {} = $signed({});\n", w.name, w.value)?,
+      }
+    }
 
     write!(f, "always @(posedge ap_clk) begin\n")?;
     write!(f, "\tif(ap_rst) begin\n")?;
+    for arg in self.args.iter() {
+      write!(f, "\t\t{} <= 0;\n", arg)?;
+    }
     for r in self.regs.iter() {
-      write!(f, "\t\t{} <= {}\n", r.name, r.ini)?;
+      write!(f, "\t\t{} <= {};\n", r.name, r.ini)?;
     }
     write!(f, "\t\tap_done <= 0;\n\t\tap_ready <= 1;\n\t\tap_return <= 0;\n\t\tap_fsm <= 0;\n")?;
     write!(f, "\tend else begin\n")?;
@@ -42,7 +55,10 @@ impl fmt::Display for Function {
     for arg in self.args.iter() {
       write!(f, "\t\t\t\t\t{0} <= ap_{0};\n", arg)?;
     }
-    write!(f, "\t\t\t\t\tap_ready <= 0;\n\t\t\t\t\tap_done <= 0;\n\t\t\t\t\tap_fsm <= 1;\n")?;
+    for r in self.regs.iter() {
+      write!(f, "\t\t\t\t\t{} <= {};\n", r.name, r.ini)?;
+    }
+    write!(f, "\t\t\t\t\tap_ready <= 0;\n\t\t\t\t\tap_done <= 0;\n\t\t\t\t\tap_fsm <= 1;\n\t\t\t\tend\n\t\t\tend\n")?;
     // 各状態の定義
     let mut vgraph: Vec<(i32, CDFGNode)> = self.graph.clone().into_iter().collect();
     vgraph.sort();
@@ -77,7 +93,7 @@ impl fmt::Display for ast::Stat {
         }
       },
       Self::Return(e) => {
-        write!(f, "\t\t\t\tap_return <= {}\n", e)?;
+        write!(f, "\t\t\t\tap_return <= {};\n", e)?;
         write!(f, "\t\t\t\tap_ready <= 1;\n\t\t\t\tap_done <= 1;\n")?;
       },
       _ => unreachable!(),
@@ -98,7 +114,7 @@ impl fmt::Display for ast::Expr {
       },
       Self::Op1(op, e) => write!(f, "{}({})", op, e),
       Self::Op2(op, e1, e2) => write!(f, "({}) {} ({})", e1, op, e2),
-      Self::Assign(s, e) => write!(f, "{} = {}", s, e),
+      Self::Assign(s, e) => write!(f, "{} <= {}", s, e),
     }
   }
 }

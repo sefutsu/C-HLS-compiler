@@ -14,15 +14,15 @@ reg [31:0] a;
 reg [31:0] b;
 reg [31:0] tmp;
 
-reg [3:0] ap_fsm
+reg [3:0] ap_fsm;
 assign ap_idle = ap_fsm == 0;
 
 always @(posedge ap_clk) begin
 	if(ap_rst) begin
-		n <= 0
-		a <= 0
-		b <= 1
-		tmp <= 0
+		n <= 0;
+		a <= 0;
+		b <= 1;
+		tmp <= 0;
 		ap_done <= 0;
 		ap_ready <= 1;
 		ap_return <= 0;
@@ -32,9 +32,14 @@ always @(posedge ap_clk) begin
 			0: begin
 				if(ap_start) begin
 					n <= ap_n;
+					a <= 0;
+					b <= 1;
+					tmp <= 0;
 					ap_ready <= 0;
 					ap_done <= 0;
 					ap_fsm <= 1;
+				end
+			end
 			1: begin
 				if((n) < (2)) begin
 					ap_fsm <= 2;
@@ -43,7 +48,7 @@ always @(posedge ap_clk) begin
 				end
 			end
 			2: begin
-				ap_return <= n
+				ap_return <= n;
 				ap_ready <= 1;
 				ap_done <= 1;
 				ap_fsm <= 0;
@@ -59,30 +64,30 @@ always @(posedge ap_clk) begin
 				end
 			end
 			5: begin
-				a = (a) + (b);
+				a <= (a) + (b);
 				ap_fsm <= 6;
 			end
 			6: begin
-				tmp = a;
+				tmp <= a;
 				ap_fsm <= 7;
 			end
 			7: begin
-				a = b;
+				a <= b;
 				ap_fsm <= 8;
 			end
 			8: begin
-				b = tmp;
+				b <= tmp;
 				ap_fsm <= 9;
 			end
 			9: begin
-				n = (n) - (1);
+				n <= (n) - (1);
 				ap_fsm <= 10;
 			end
 			10: begin
 				ap_fsm <= 4;
 			end
 			11: begin
-				ap_return <= b
+				ap_return <= b;
 				ap_ready <= 1;
 				ap_done <= 1;
 				ap_fsm <= 0;
