@@ -90,7 +90,12 @@ impl fmt::Display for ast::Expr {
   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
     match self {
       Self::Int(i) => write!(f, "{}", i),
-      Self::Id(s) => write!(f, "{}", s),
+      Self::Id(t, s) => {
+        match t {
+          ast::Type::U32 => write!(f, "{}", s),
+          ast::Type::I32 => write!(f, "$signed({})", s),
+        }
+      },
       Self::Op1(op, e) => write!(f, "{}({})", op, e),
       Self::Op2(op, e1, e2) => write!(f, "({}) {} ({})", e1, op, e2),
       Self::Assign(s, e) => write!(f, "{} = {}", s, e),

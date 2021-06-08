@@ -98,7 +98,7 @@ UnaryExpression: ast::Expr = {
   <op:UnaryOperator> <e:PrimaryExpression> => ast::Expr::Op1(op, Box::new(e)),
 };
 PrimaryExpression: ast::Expr = {
-  <Identifier> => ast::Expr::Id(<>),
+  <Identifier> => ast::Expr::Id(ast::Type::U32, <>),
   <Constant>,
   "(" <Expression> ")",
 };

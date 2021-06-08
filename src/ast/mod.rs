@@ -25,7 +25,7 @@ pub struct FunType {
 #[derive(Debug, Clone)]
 pub enum Expr {
   Int(i64),
-  Id(String),
+  Id(Type, String),
   Op1(Op1, Box<Expr>),
   Op2(Op2, Box<Expr>, Box<Expr>),
   Assign(String, Box<Expr>),
