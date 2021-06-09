@@ -41,14 +41,14 @@ always @(posedge ap_clk) begin
 				end
 			end
 			1: begin
-				if((n) < (2)) begin
+				if(($signed(n)) < (2)) begin
 					ap_fsm <= 2;
 				end else begin
 					ap_fsm <= 4;
 				end
 			end
 			2: begin
-				ap_return <= n;
+				ap_return <= $signed(n);
 				ap_ready <= 1;
 				ap_done <= 1;
 				ap_fsm <= 0;
@@ -57,37 +57,37 @@ always @(posedge ap_clk) begin
 				ap_fsm <= 4;
 			end
 			4: begin
-				if((1) < (n)) begin
+				if((1) < ($signed(n))) begin
 					ap_fsm <= 5;
 				end else begin
 					ap_fsm <= 11;
 				end
 			end
 			5: begin
-				a <= (a) + (b);
+				a <= ($signed(a)) + ($signed(b));
 				ap_fsm <= 6;
 			end
 			6: begin
-				tmp <= a;
+				tmp <= $signed(a);
 				ap_fsm <= 7;
 			end
 			7: begin
-				a <= b;
+				a <= $signed(b);
 				ap_fsm <= 8;
 			end
 			8: begin
-				b <= tmp;
+				b <= $signed(tmp);
 				ap_fsm <= 9;
 			end
 			9: begin
-				n <= (n) - (1);
+				n <= ($signed(n)) - (1);
 				ap_fsm <= 10;
 			end
 			10: begin
 				ap_fsm <= 4;
 			end
 			11: begin
-				ap_return <= b;
+				ap_return <= $signed(b);
 				ap_ready <= 1;
 				ap_done <= 1;
 				ap_fsm <= 0;

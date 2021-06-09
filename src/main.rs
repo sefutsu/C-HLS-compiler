@@ -14,7 +14,9 @@ fn main() {
     match parser.parse(&buf) {
       Ok(s) => {
         eprintln!("Parsed: {:#?}", s);
-        let cdfg = s.to_cdfg();
+        let typed = s.typing();
+        eprintln!("Typed: {:#?}", typed);
+        let cdfg = typed.to_cdfg();
         eprintln!("CDFG: {:#?}", cdfg);
         println!("{}", cdfg);
       }

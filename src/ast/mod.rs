@@ -55,4 +55,5 @@ pub struct Program {
   pub functions: Vec<Function>,
 }
 
+mod typing;
 mod to_cdfg;
