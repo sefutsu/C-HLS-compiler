@@ -1,4 +1,4 @@
-module fib (
+module collatz (
 	input ap_clk,
 	input ap_rst,
 	input ap_start,
@@ -10,9 +10,7 @@ module fib (
 );
 
 reg [31:0] n;
-reg [31:0] a;
-reg [31:0] b;
-reg [31:0] tmp;
+reg [31:0] m;
 
 reg [3:0] ap_fsm;
 assign ap_idle = ap_fsm == 0;
@@ -20,9 +18,7 @@ assign ap_idle = ap_fsm == 0;
 always @(posedge ap_clk) begin
 	if(ap_rst) begin
 		n <= 0;
-		a <= 0;
-		b <= 1;
-		tmp <= 0;
+		m <= 0;
 		ap_done <= 0;
 		ap_ready <= 1;
 		ap_return <= 0;
@@ -32,62 +28,56 @@ always @(posedge ap_clk) begin
 			0: begin
 				if(ap_start) begin
 					n <= ap_n;
-					a <= 0;
-					b <= 1;
-					tmp <= 0;
+					m <= 0;
 					ap_ready <= 0;
 					ap_done <= 0;
 					ap_fsm <= 1;
 				end
 			end
 			1: begin
-				if(($signed(n)) < (2)) begin
+				if((1) < (n)) begin
 					ap_fsm <= 2;
 				end else begin
-					ap_fsm <= 4;
+					ap_fsm <= 10;
 				end
 			end
 			2: begin
-				ap_return <= $signed(n);
-				ap_ready <= 1;
-				ap_done <= 1;
-				ap_fsm <= 0;
-			end
-			3: begin
-				ap_fsm <= 12;
-			end
-			4: begin
-				if((1) < ($signed(n))) begin
-					ap_fsm <= 5;
+				if((n) & (1)) begin
+					ap_fsm <= 3;
 				end else begin
-					ap_fsm <= 11;
+					ap_fsm <= 5;
 				end
 			end
+			3: begin
+				n <= ((n) * (3)) + (1);
+				ap_fsm <= 4;
+			end
+			4: begin
+				ap_fsm <= 6;
+			end
 			5: begin
-				a <= ($signed(a)) + ($signed(b));
+				n <= (n) / (2);
 				ap_fsm <= 6;
 			end
 			6: begin
-				tmp <= $signed(a);
-				ap_fsm <= 7;
+				if((m) < (n)) begin
+					ap_fsm <= 7;
+				end else begin
+					ap_fsm <= 9;
+				end
 			end
 			7: begin
-				a <= $signed(b);
+				m <= n;
 				ap_fsm <= 8;
 			end
 			8: begin
-				b <= $signed(tmp);
 				ap_fsm <= 9;
 			end
 			9: begin
-				n <= ($signed(n)) - (1);
-				ap_fsm <= 10;
+				ap_fsm <= 1;
 			end
 			10: begin
-				ap_fsm <= 4;
-			end
-			11: begin
-				ap_return <= $signed(b);
+				ap_return <= m;
 				ap_ready <= 1;
 				ap_done <= 1;
 				ap_fsm <= 0;
