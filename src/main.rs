@@ -18,7 +18,9 @@ fn main() {
         eprintln!("Typed: {:#?}", typed);
         let cdfg = typed.to_cdfg();
         eprintln!("CDFG: {:#?}", cdfg);
-        println!("{}", cdfg);
+        let optimized = cdfg.optimize();
+        eprintln!("Optimized: {:#?}", optimized);
+        println!("{}", optimized);
       }
       Err(e) => eprintln!("Parse error: {:#?}", e),
     }

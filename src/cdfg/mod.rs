@@ -46,7 +46,6 @@ pub struct RegData {
   pub name: String,
   pub ini: i64,
 }
-
 impl RegData {
   pub fn new(t: ast::Type, name: String, ini: i64) -> Self {
     Self {t, name, ini}
@@ -58,6 +57,11 @@ pub struct WireData {
   pub t: ast::Type,
   pub name: String,
   pub value: ast::Expr,
+}
+impl WireData {
+  pub fn new(t: ast::Type, name: String, value: ast::Expr) -> Self {
+    Self {t, name, value}
+  }
 }
 
 #[derive(Debug, Clone)]
@@ -81,3 +85,4 @@ pub struct Program {
 }
 
 mod output;
+mod optimize;
