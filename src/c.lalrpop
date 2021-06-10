@@ -94,9 +94,13 @@ MultiplicativeExpression: ast::Expr = {
 };
 CastExpression: ast::Expr = <UnaryExpression>;
 UnaryExpression: ast::Expr = {
-  <PrimaryExpression>,
-  <op:UnaryOperator> <e:PrimaryExpression> => ast::Expr::Op1(op, Box::new(e)),
+  <PostfixExpression>,
+  <op:UnaryOperator> <e:PostfixExpression> => ast::Expr::Op1(op, Box::new(e)),
 };
+PostfixExpression: ast::Expr = {
+  <PrimaryExpression>,
+  <n:Identifier> "(" <v:CommaList<Identifier>> ")" => ast::Expr::Call(n, v),
+}
 PrimaryExpression: ast::Expr = {
   <Identifier> => ast::Expr::Id(ast::Type::U32, <>),
   <Constant>,

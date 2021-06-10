@@ -29,6 +29,7 @@ pub enum Expr {
   Op1(Op1, Box<Expr>),
   Op2(Op2, Box<Expr>, Box<Expr>),
   Assign(String, Box<Expr>),
+  Call(String, Vec<String>),
 }
 
 #[derive(Debug, Clone)]
@@ -55,5 +56,5 @@ pub struct Program {
   pub functions: Vec<Function>,
 }
 
-mod typing;
-mod to_cdfg;
+// mod typing;
+// mod to_cdfg;
