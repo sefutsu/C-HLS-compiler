@@ -1,4 +1,4 @@
-co# C-HLS-compiler
+# C-HLS-compiler
 
 An HLS-compiler from a subset of C to Verilog HDL.
 
